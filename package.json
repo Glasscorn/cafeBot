@@ -1,0 +1,23 @@
+{
+  "name": "cafebot",
+  "version": "1.0.0",
+  "description": "news_cafe responding system",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon server"
+  },
+  "keywords": [
+    "telegram"
+  ],
+  "author": "Heorhi Strohanau",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^16.0.2",
+    "express": "^4.18.1",
+    "googleapis": "^107.0.0",
+    "mysql2": "^2.3.3",
+    "node-telegram-bot-api": "^0.59.0",
+    "nodemon": "^2.0.19"
+  }
+}
