@@ -12,16 +12,10 @@ const getToday = () => {
     
     return date
 }
-const deletePosition = () => {
-    console.log('deletePosition')
-}
-const sendMoreKeyboard = () => {
-    console.log('sendMoreKeyboard')
-}
+
+const capitalize = str => str.charAt(0).toUpperCase() + str.slice(1)
 
 module.exports.functions = {
     getToday,
-    deletePosition,
-    sendMoreKeyboard
-
+    capitalize
 }

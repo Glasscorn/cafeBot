@@ -1,4 +1,4 @@
-const userKeyboard = [
+const mainKeyboard = [
   [
     {
       text: 'Ввести расход позиции',
@@ -44,7 +44,7 @@ const moreKeyboard = [
 
 
 module.exports.keyboards = {
-    userKeyboard,
+    mainKeyboard,
     backKeyboard,
     moreKeyboard
 }
