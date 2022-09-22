@@ -22,18 +22,65 @@ const backKeyboard = [
 const moreKeyboard = [
   [
     {
+      text: 'Отчет',
+    }
+  ],
+  [
+    {
+      text: 'Панель администратора',
+    }
+  ],
+  [
+    {
       text: 'Добавить позицию',
+    },
+    {
+      text: 'Удалить позицию (в разработке)',
     }
   ],
   [
     {
-      text: 'Посмотреть позицию',
+      text: 'Назад',
+    }
+  ]
+]
+
+const reportKeyboard = [
+  [
+    {
+      text: 'Месяц',
     }
   ],
   [
     {
-      text: 'Отчет за сегодня',
+      text: 'Сегодня',
+    },
+    {
+      text: 'Неделя',
     }
+  ],
+  [
+    {
+      text: 'Назад',
+    }
+  ]
+]
+
+const adminKeyboard = [
+  [
+    {
+      text: 'Добавить пользователя',
+    }
+  ],
+  [
+    {
+      text: 'Удалить пользователя (в разработке)',
+    },
+  ],
+  [
+    {
+      text: 'Ввести SQL команду вручную (в разработке)',
+    },
   ],
   [
     {
@@ -46,5 +93,7 @@ const moreKeyboard = [
 module.exports.keyboards = {
     mainKeyboard,
     backKeyboard,
-    moreKeyboard
+    moreKeyboard,
+    reportKeyboard,
+    adminKeyboard
 }

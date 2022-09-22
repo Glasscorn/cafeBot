@@ -39,40 +39,39 @@ const main_more = async (msg,user,bot) => {
 
 const addPosition = async (msg,user,bot) => {
 
-
     await queryPool.changeStatus(msg.from.id,'main')
 
     const request = msg.text.trim().split(',')
 
     const today = functions.getToday()
 
-    let invalidPositions = []
-    let existPositions = []
-    let positions = []
+    let position_obj = {}
 
     for(const position of request){
 
-        if(position.match(/[0-9,.!@#$%^&*()/|\\]/gi)) invalidPositions.push(position)
+        if(position.match(/[0-9,.!@#$%^&*()/|\\]/gi)) position_obj[position] = 'invalid'
 
-        if(!await queryPool.findPosition(position,today)){
+        else if(!await queryPool.findPosition(position,today)){
 
-            positions.push(position)
+            position_obj[position] = 'valid'
 
             await queryPool.addPosition(position)
 
-        } else existPositions.push(position)
+        } else position_obj[position] = 'exist'
 
     }
 
-    let reply = existPositions.length === positions.length ? 'Все позиции уже существуют ❌\n\n' : 'Успешно вставлены позиции ✅\n\n'
+    let reply = 'Вот что у меня получилось:\n\n'
 
-    positions.forEach(el => {
-        if(invalidPositions.includes(el)) reply += `Позиция '${el}' не валидная\n`
-        if(existPositions.includes(el)) reply += `Позиция '${el}' уже существует\n`
-        else reply += `Позиция '${el}' вставлена\n`
-    })
+    for(const position in position_obj){
 
-    if(invalidPositions[0]) reply += '\nПозиции не должны содержать цифр и спец символов'
+        reply += position_obj[position] === 'invalid' ? `Позиция '${position}' не валидная ❌\n`
+        : position_obj[position] === 'exist' ? `Позиция '${position}' уже существует ❌\n`
+        : `Позиция '${position}' успешно вставлена ✅\n`
+
+    }
+
+    if(Object.values(position_obj).indexOf('invalid') > -1) reply += '\n❗️Позиции не должны содержать цифр и спец символов❗️'
 
     const keyboard = keyboards.mainKeyboard
 
@@ -136,10 +135,127 @@ const addPositionReduce = async (msg,user,bot) => {
 
 }
 
+const dayReport = async (msg,user,bot) => {
+
+    let request
+
+    switch(msg.text){
+        case 'Месяц': request = functions.getLastMonth(); break
+        case 'Неделя': request = functions.getLastWeek(); break
+        case 'Сегодня': request = functions.getToday(); break
+        default: break
+    }
+
+    if(!request){
+
+        request = {}
+
+        const request_params = msg.text.split(' ').filter(el => el)
+
+        if(request_params.length === 2){
+
+            request.periodStart = functions.getDay(request_params[0])
+            request.periodEnd = functions.getDay(request_params[1])
+
+        }
+
+        if(request_params.length === 1) request.period = functions.getDay(request_params[0])
+    
+    }
+
+    await queryPool.changeStatus(msg.from.id,'main')
+
+    let data = []
+
+    let reply = 'Вот что удалось найти\n\n\n'
+
+    if(request.hasOwnProperty(['period'])){
+
+        data = await queryPool.getDataByDay(request.period)
+
+    } else if(request.hasOwnProperty(['periodStart'])){
+
+        data = await queryPool.getDataByPeriod(request.periodStart,request.periodEnd)
+
+    }
+
+    if(data[0]) data.forEach(day => {
+
+        for(const position in day){
+
+            if(position === 'date'){
+
+                reply += `За ${functions.toReadableData(day[position])} списания:\n`
+
+            } else {
+
+                if(Number(day[position]) > 0) reply += `${functions.capitalize(position)}: ${day[position]}\n`
+
+            }
+
+        }
+
+        reply +=  '\n'
+
+    })
+
+    else reply = 'Ничего не удалось найти, прости 😰'
+
+    const keyboard = keyboards.mainKeyboard
+
+    return bot.sendMessage(msg.from.id,reply,{
+                    reply_markup: {
+                        keyboard: keyboard,
+                        resize_keyboard: true,
+                        one_time_keyboard: true
+                    }
+                })
+
+}
+
+const addUser = async (msg,user,bot) => {
+
+    await queryPool.changeStatus(msg.from.id,'admin')
+
+
+
+    const reply = `Пользователь ${msg.text} добавлен успешно. Теперь он может работать со мной`
+    const keyboard = keyboards.adminKeyboard
+
+    return bot.sendMessage(msg.from.id,reply,{
+                    reply_markup: {
+                        keyboard: keyboard,
+                        resize_keyboard: true,
+                        one_time_keyboard: true
+                    }
+                })
+
+}
+
+const deleteUser = async (msg,user,bot) => {
+
+    await queryPool.changeStatus(msg.from.id,'admin')
+
+    // const reply = 
+    const keyboard = keyboards.adminKeyboard
+
+    return bot.sendMessage(msg.from.id,reply,{
+                    reply_markup: {
+                        keyboard: keyboard,
+                        resize_keyboard: true,
+                        one_time_keyboard: true
+                    }
+                })
+
+}
+
+
 module.exports.handlers = {
     main,
     main_more,
     addPosition,
     addPositionReduce,
-    
+    dayReport,
+    addUser,
+    deleteUser,
 }
