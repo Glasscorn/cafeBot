@@ -1,6 +1,6 @@
 {
   "name": "cafebot",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "news_cafe report system",
   "main": "server.js",
   "scripts": {
@@ -14,6 +14,7 @@
   "author": "Heorhi Strohanau",
   "license": "ISC",
   "dependencies": {
+    "body-parser": "^1.20.0",
     "dotenv": "^16.0.2",
     "express": "^4.18.1",
     "googleapis": "^107.0.0",

@@ -213,21 +213,71 @@ const dayReport = async (msg,user,bot) => {
 
 }
 
-const addUser = async (msg,user,bot) => {
+const review = async (msg,user,bot) => {
 
-    await queryPool.changeStatus(msg.from.id,'admin')
+    await queryPool.changeStatus(msg.from.id,'main')
 
+    const CREATOR_TELEGRAM_ID = process.env.CREATOR_TELEGRAM_ID
+    const CREATOR_TELEGRAM_USERNAME = process.env.CREATOR_TELEGRAM_USERNAME
 
+    let reply = 'Отправила разработчику. Скоро он выйдет на связь!'
+    const keyboard = keyboards.mainKeyboard
 
-    const reply = `Пользователь ${msg.text} добавлен успешно. Теперь он может работать со мной`
-    const keyboard = keyboards.adminKeyboard
+    if(CREATOR_TELEGRAM_ID){
+        
+        const reply = `Пришло сообщение от @${msg.from.username}\n\n${msg.text}`
 
+        bot.sendMessage(CREATOR_TELEGRAM_ID,reply,{
+        reply_markup: {
+            keyboard: keyboard,
+            resize_keyboard: true,
+            one_time_keyboard: true
+        }
+    })
+
+    } else reply = `Что-то пошло не так, можешь отправить сообщение сюда @${CREATOR_TELEGRAM_USERNAME}`
+    
     return bot.sendMessage(msg.from.id,reply,{
                     reply_markup: {
                         keyboard: keyboard,
                         resize_keyboard: true,
                         one_time_keyboard: true
                     }
+                })
+
+}
+
+const addUser = async (msg,user,bot) => {
+
+    await queryPool.changeStatus(msg.from.id,'main')
+
+    let username = msg.text
+
+    username = username.trim().replace('@','')
+
+    const user_key = functions.generateKey()
+
+    await queryPool.setNewUser(username,user_key)
+
+    const reply = `Пользователь @${username} добавлен успешно. Теперь он может работать со мной\n\nЧтобы активировать меня, он должен написать мне команду ниже (нажми, чтобы скопировать)`
+    const command = "`" + '/auth ' + user_key +"`"
+    const keyboard = keyboards.mainKeyboard
+
+    await bot.sendMessage(msg.from.id,reply,{
+        reply_markup: {
+            keyboard: keyboard,
+            resize_keyboard: true,
+            one_time_keyboard: true
+        }
+    })
+
+    return bot.sendMessage(msg.from.id,command,{
+                    reply_markup: {
+                        keyboard: keyboard,
+                        resize_keyboard: true,
+                        one_time_keyboard: true
+                    },
+                    parse_mode: 'MarkdownV2'
                 })
 
 }
@@ -236,7 +286,6 @@ const deleteUser = async (msg,user,bot) => {
 
     await queryPool.changeStatus(msg.from.id,'admin')
 
-    // const reply = 
     const keyboard = keyboards.adminKeyboard
 
     return bot.sendMessage(msg.from.id,reply,{
@@ -250,12 +299,14 @@ const deleteUser = async (msg,user,bot) => {
 }
 
 
+
 module.exports.handlers = {
     main,
     main_more,
     addPosition,
     addPositionReduce,
     dayReport,
+    review,
     addUser,
     deleteUser,
 }

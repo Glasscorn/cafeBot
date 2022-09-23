@@ -87,7 +87,40 @@ const getDataByPeriod = async (periodStart,periodEnd) => {
         const data = await pool.query(`SELECT * FROM positions WHERE date BETWEEN date '${periodStart}' AND date '${periodEnd}'`).then(data => data[0])
         return data
     } catch(e){
-        return console.log('Error at getDataByDay query', e)
+        return console.log('Error at getDataByPeriod query', e)
+    }
+}
+
+const setNewUser = async (username,key) => {
+    try {
+        return data = await pool.query(`INSERT INTO new_users (username,user_key) VALUES ('${username}','${key}')`)
+    } catch(e){
+        return console.log('Error at setNewUser query', e)
+    }
+}
+
+const findNewUser = async username => {
+    try {
+        const data = await pool.query(`SELECT * FROM new_users WHERE username = '${username}'`).then(data => data[0][0])
+        return data
+    } catch(e){
+        return console.log('Error at findNewUser query', e)
+    }
+}
+
+const logUpUser = async id => {
+    try {
+        return data = await pool.query(`INSERT INTO users (user_id) VALUE ('${id}')`)
+    } catch(e){
+        return console.log('Error at setNewUser query', e)
+    }
+}
+
+const deleteNewUser = async username => {
+    try {
+        return data = await pool.query(`DELETE FROM new_users WHERE username = '${username}'`)
+    } catch(e){
+        return console.log('Error at deleteNewUser query', e)
     }
 }
 
@@ -101,5 +134,9 @@ module.exports.queryPool = {
     findPosition,
     checkToday,
     getDataByDay,
-    getDataByPeriod
+    getDataByPeriod,
+    setNewUser,
+    findNewUser,
+    logUpUser,
+    deleteNewUser
 }

@@ -57,11 +57,22 @@ const getLastWeek = () => {
 
 }
 
-const getDay = day => day.split(".").reverse().join("-")
+const getDay = day => day.split('.').reverse().join('-')
 
 const capitalize = str => str.charAt(0).toUpperCase() + str.slice(1)
 
 const toReadableData = date => `${String(date.getUTCDate()+1).padStart(2,'0')}.${String(date.getUTCMonth()+1).padStart(2,'0')}.${date.getUTCFullYear()}`
+
+const generateKey = () => {
+
+    let key = ''
+    var symbols = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+    
+    for (let i = 0; i < 15; i++) key += symbols.charAt(Math.floor(Math.random() * symbols.length))
+
+    return key
+
+}
 
 module.exports.functions = {
     getLastMonth,
@@ -69,5 +80,6 @@ module.exports.functions = {
     getToday,
     getDay,
     capitalize,
-    toReadableData
+    toReadableData,
+    generateKey
 }

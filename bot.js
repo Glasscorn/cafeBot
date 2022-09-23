@@ -20,9 +20,11 @@ bot.on('message', async msg => {
 
     const user = await queryPool.findUser(id)
 
-    const today = functions.getToday()
+    if(msg.text.match('/auth') && !user) return logic.registration(msg,bot)
 
     if(!user) return bot.sendMessage(id, messages.unknownUser(first_name))
+
+    const today = functions.getToday()
 
     if(!await queryPool.checkToday(today)) await queryPool.setNewDay(today)
 
@@ -35,6 +37,7 @@ bot.on('message', async msg => {
         case 'Панель администратора': return logic.admin(msg,user,bot)
         case 'Добавить пользователя': return logic.addUser(msg,user,bot)
         case 'Удалить пользователя': return logic.deleteUser(msg,user,bot)
+        case 'Написать пожелания': return logic.review(msg,user,bot)
         default: return logic.main(msg,user,bot)
     }
 
