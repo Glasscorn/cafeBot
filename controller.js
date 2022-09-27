@@ -2,25 +2,44 @@ const queryPool = require('./query')
 
 class Controller {
     async getData(req,res){
-        const request = req.query
-        console.log(request)
+
+        const [ periodStart,periodEnd ] = Object.values(req.query)
+        console.log([ periodStart,periodEnd ])
+        
         try {
-            // res.send([[request.request,request.argument]])
-            res.json(request)
+            
+            res.json({ periodStart,periodEnd })
+
         } catch(e){
+
             res.status(500)
         }
+
     }
+
     async setData(req,res){
+
         const request = req.query
-        console.log(req.body)
+
         try {
+
             // res.send([[request.request,request.argument]])
             res.json(request)
+
         } catch(e){
+
             res.status(500)
+
         }
+
     }
+
+    async ping(req,res){
+
+        res.status(200).json(true)
+
+    }
+
 }
 
 module.exports = new Controller

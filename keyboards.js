@@ -19,10 +19,15 @@ const backKeyboard = [
   ]
 ]
 
-const moreKeyboard = [
+const moreKeyboardUser = [
   [
     {
       text: 'Отчет',
+    }
+  ],
+  [
+    {
+      text: 'Смотреть позиции',
     }
   ],
   [
@@ -32,7 +37,28 @@ const moreKeyboard = [
   ],
   [
     {
-      text: 'Панель администратора',
+      text: 'Добавить позицию',
+    },
+    {
+      text: 'Удалить позицию',
+    }
+  ],
+  [
+    {
+      text: 'Назад',
+    }
+  ]
+]
+
+const moreKeyboardAdmin = [
+  [
+    {
+      text: 'Отчет',
+    }
+  ],
+  [
+    {
+      text: 'Смотреть позиции',
     }
   ],
   [
@@ -40,7 +66,17 @@ const moreKeyboard = [
       text: 'Добавить позицию',
     },
     {
-      text: 'Удалить позицию (в разработке)',
+      text: 'Удалить позицию',
+    }
+  ],
+  [
+    {
+      text: 'Панель администратора',
+    }
+  ],
+  [
+    {
+      text: 'Написать пожелания',
     }
   ],
   [
@@ -74,12 +110,17 @@ const reportKeyboard = [
 const adminKeyboard = [
   [
     {
+      text: 'Изменить роль пользователя',
+    }
+  ],
+  [
+    {
       text: 'Добавить пользователя',
     }
   ],
   [
     {
-      text: 'Удалить пользователя (в разработке)',
+      text: 'Удалить пользователя',
     },
   ],
   [
@@ -98,7 +139,8 @@ const adminKeyboard = [
 module.exports.keyboards = {
     mainKeyboard,
     backKeyboard,
-    moreKeyboard,
+    moreKeyboardUser,
+    moreKeyboardAdmin,
     reportKeyboard,
     adminKeyboard
 }

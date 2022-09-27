@@ -9,6 +9,7 @@ const router = new Router()
 const API_KEY = process.env.API_KEY
 
 router.get(`/api/${API_KEY}/getData`, Controller.getData)
+router.get('/ping', Controller.ping)
 router.post(`/api/${API_KEY}/setData`, Controller.setData)
 
 module.exports = router

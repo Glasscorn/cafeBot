@@ -1,6 +1,6 @@
 {
   "name": "cafebot",
-  "version": "1.1.2",
+  "version": "1.2.2",
   "description": "news_cafe report system",
   "main": "server.js",
   "scripts": {

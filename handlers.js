@@ -25,7 +25,7 @@ const main_more = async (msg,user,bot) => {
     await queryPool.changeStatus(msg.from.id,'main_more')
 
     const reply = messages.more(user.role)
-    const keyboard = keyboards.moreKeyboard
+    const keyboard = user.role === 'admin' ? keyboards.moreKeyboardAdmin : keyboards.moreKeyboardUser
 
     return bot.sendMessage(msg.from.id,reply,{
                     reply_markup: {
@@ -41,7 +41,7 @@ const addPosition = async (msg,user,bot) => {
 
     await queryPool.changeStatus(msg.from.id,'main')
 
-    const request = msg.text.trim().split(',')
+    const request = msg.text.trim().replace('\n','').split(',')
 
     const today = functions.getToday()
 
@@ -68,6 +68,54 @@ const addPosition = async (msg,user,bot) => {
         reply += position_obj[position] === 'invalid' ? `Позиция '${position}' не валидная ❌\n`
         : position_obj[position] === 'exist' ? `Позиция '${position}' уже существует ❌\n`
         : `Позиция '${position}' успешно вставлена ✅\n`
+
+    }
+
+    if(Object.values(position_obj).indexOf('invalid') > -1) reply += '\n❗️Позиции не должны содержать цифр и спец символов❗️'
+
+    const keyboard = keyboards.mainKeyboard
+
+    return bot.sendMessage(msg.from.id,reply,{
+                    reply_markup: {
+                        keyboard: keyboard,
+                        resize_keyboard: true,
+                        one_time_keyboard: true
+                    }
+                })
+
+}
+
+const deletePosition = async (msg,user,bot) => {
+
+    await queryPool.changeStatus(msg.from.id,'main')
+
+    const request = msg.text.trim().replace('\n','').split(',')
+
+    const today = functions.getToday()
+
+    let position_obj = {}
+
+    for(const position of request){
+
+        if(position.match(/[0-9,.!@#$%^&*()/|\\]/gi)) position_obj[position] = 'invalid'
+
+        else if(await queryPool.findPosition(position,today)){
+
+            position_obj[position] = 'valid'
+
+            await queryPool.deletePosition(position)
+
+        } else position_obj[position] = 'exist'
+
+    }
+
+    let reply = 'Вот что у меня получилось:\n\n'
+
+    for(const position in position_obj){
+
+        reply += position_obj[position] === 'invalid' ? `Позиция '${position}' не валидная ❌\n`
+        : !position_obj[position] === 'exist' ? `Позиции '${position}' нет в таблице ❌\n`
+        : `Позиция '${position}' успешно удалена ✅\n`
 
     }
 
@@ -177,6 +225,10 @@ const dayReport = async (msg,user,bot) => {
 
         data = await queryPool.getDataByPeriod(request.periodStart,request.periodEnd)
 
+    } else {
+
+        data = await queryPool.getDataByDay(request)
+
     }
 
     if(data[0]) data.forEach(day => {
@@ -211,6 +263,26 @@ const dayReport = async (msg,user,bot) => {
                     }
                 })
 
+}
+
+const checkPositions = async (msg,user,bot) => {
+
+    const data = await queryPool.checkPositions()
+
+    let reply = messages.checkPositions
+
+    data.forEach((el,i) => reply += i === 0 ? '' : i === data.length-1 ? `${functions.capitalize(el.COLUMN_NAME)}\n` : `${functions.capitalize(el.COLUMN_NAME)},\n`)
+
+    const keyboard = keyboards.mainKeyboard
+
+    return bot.sendMessage(msg.chat.id,reply,{
+        reply_markup: {
+            keyboard: keyboard,
+            resize_keyboard: true,
+            one_time_keyboard: true
+        }
+    })
+    
 }
 
 const review = async (msg,user,bot) => {
@@ -249,19 +321,26 @@ const review = async (msg,user,bot) => {
 
 const addUser = async (msg,user,bot) => {
 
-    await queryPool.changeStatus(msg.from.id,'main')
+    let username = msg.text.trim().replace('@','')
 
-    let username = msg.text
+    const user_list = (await queryPool.userList()).map(user => user.username.toLowerCase())
 
-    username = username.trim().replace('@','')
+    if(user_list.includes(username.toLowerCase())) return bot.sendMessage(msg.from.id,`Пользователь ${username} уже есть в базе`,{
+            reply_markup: {
+                keyboard: keyboards.backKeyboard,
+                resize_keyboard: true,
+                one_time_keyboard: true
+            },
+            parse_mode: 'MarkdownV2'
+        })
 
-    const user_key = functions.generateKey()
+    await queryPool.changeStatus(msg.from.id,'admin')
 
-    await queryPool.setNewUser(username,user_key)
+    await queryPool.addUser(username.toLowerCase())
 
     const reply = `Пользователь @${username} добавлен успешно. Теперь он может работать со мной\n\nЧтобы активировать меня, он должен написать мне команду ниже (нажми, чтобы скопировать)`
-    const command = "`" + '/auth ' + user_key +"`"
-    const keyboard = keyboards.mainKeyboard
+    const command = "`" + '/auth ' + "`"
+    const keyboard = keyboards.backKeyboard
 
     await bot.sendMessage(msg.from.id,reply,{
         reply_markup: {
@@ -284,9 +363,75 @@ const addUser = async (msg,user,bot) => {
 
 const deleteUser = async (msg,user,bot) => {
 
+    const message = msg.text.replace('@','').toLowerCase()
+
+    const user_list = (await queryPool.userList()).map(user => [user.username.toLowerCase(),user.user_id]).flat()
+
+    if(!user_list.includes(message)) return bot.sendMessage(msg.from.id,`Имя пользователя @${message} введено неправильно`,{
+        reply_markup: {
+            keyboard: keyboards.backKeyboard,
+            resize_keyboard: true,
+            one_time_keyboard: true
+        }
+    })
+
+    if(user.username == message) return bot.sendMessage(msg.from.id,'Вы не можете удалить себя. Попросите другого админа',{
+        reply_markup: {
+            keyboard: keyboards.backKeyboard,
+            resize_keyboard: true,
+            one_time_keyboard: true
+        }
+    })
+
+
+    await queryPool.deleteUser(message)
     await queryPool.changeStatus(msg.from.id,'admin')
 
+    const reply = `Пользователь @${message} был удален`
+    const keyboard = keyboards.backKeyboard
+
+    return bot.sendMessage(msg.from.id,reply,{
+                    reply_markup: {
+                        keyboard: keyboard,
+                        resize_keyboard: true,
+                        one_time_keyboard: true
+                    }
+                })
+
+}
+
+
+const changeRole = async (msg,user,bot) => {
+
+    const message = msg.text.replace('@','').toLowerCase()
+
+    const user_list = (await queryPool.userList()).map(user => [user.username.toLowerCase(),user.user_id]).flat()
+
+    if(!user_list.includes(message)) return bot.sendMessage(msg.from.id,`Имя пользователя @${message} введено неправильно`,{
+        reply_markup: {
+            keyboard: keyboards.backKeyboard,
+            resize_keyboard: true,
+            one_time_keyboard: true
+        }
+    })
+
+    if(user.username == message) return bot.sendMessage(msg.from.id,'Вы не можете изменить свою роль. Попросите другого админа',{
+        reply_markup: {
+            keyboard: keyboards.backKeyboard,
+            resize_keyboard: true,
+            one_time_keyboard: true
+        }
+    })
+
     const keyboard = keyboards.adminKeyboard
+    
+    const user_role = await queryPool.findUserByUsername(message)
+    const roleToChange = user_role.role == 'user' ? 'admin' : 'user'
+
+    await queryPool.changeRole(message,roleToChange)
+    await queryPool.changeStatus(msg.from.id,'admin')
+
+    const reply = `Теперь роль пользователя @${message} - ${roleToChange}`
 
     return bot.sendMessage(msg.from.id,reply,{
                     reply_markup: {
@@ -304,9 +449,12 @@ module.exports.handlers = {
     main,
     main_more,
     addPosition,
+    deletePosition,
     addPositionReduce,
     dayReport,
+    checkPositions,
     review,
     addUser,
     deleteUser,
+    changeRole,
 }

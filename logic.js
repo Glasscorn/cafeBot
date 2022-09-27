@@ -4,6 +4,7 @@ const { messages } = require('./messages')
 const { keyboards } = require('./keyboards')
 const { queryPool } = require('./query')
 const { handlers } = require('./handlers')
+const { functions } = require('./functions')
 
 const main = async (msg,user,bot) => {
 
@@ -12,10 +13,12 @@ const main = async (msg,user,bot) => {
     switch(status){
         case 'addPositionReduce': return handlers.addPositionReduce(msg,user,bot)
         case 'addPosition': return handlers.addPosition(msg,user,bot)
+        case 'deletePosition': return handlers.deletePosition(msg,user,bot)
         case 'dayReport': return handlers.dayReport(msg,user,bot)
         case 'addUser': return handlers.addUser(msg,user,bot)
         case 'deleteUser': return handlers.deleteUser(msg,user,bot)
         case 'review': return handlers.review(msg,user,bot)
+        case 'changeRole': return handlers.changeRole(msg,user,bot)
         default: return handlers.main(msg,user,bot)
     }
 
@@ -25,24 +28,54 @@ const main_back = async (msg,user,bot) => handlers.main(msg,user,bot)
 
 const main_more = async (msg,user,bot) => handlers.main_more(msg,user,bot)
 
+const checkPositions = async (msg,user,bot) => handlers.checkPositions(msg,user,bot)
+
 const addPosition = async (msg,user,bot) => {
 
     const status = 'addPosition'
 
     await queryPool.changeStatus(msg.from.id,status)
 
-    const reply = messages.addPosition()
-    const keyboard = keyboards.backKeyboard
+    const data = await queryPool.checkPositions()
+
+    let reply = messages.addPosition
+
+    data.forEach((el,i) => reply += i === 0 ? '' : i === data.length-1 ? `${functions.capitalize(el.COLUMN_NAME)}\n` : `${functions.capitalize(el.COLUMN_NAME)},\n`)
+
 
     return bot.sendMessage(msg.chat.id,reply,{
         reply_markup: {
-            keyboard: keyboard,
+            keyboard: keyboards.backKeyboard,
             resize_keyboard: true,
             one_time_keyboard: true
         }
     })
     
 }
+
+const deletePosition = async (msg,user,bot) => {
+
+    const status = 'deletePosition'
+
+    await queryPool.changeStatus(msg.from.id,status)
+
+    const data = await queryPool.checkPositions()
+
+    let reply = messages.deletePosition
+
+    data.forEach((el,i) => reply += i === 0 ? '' : i === data.length-1 ? `${functions.capitalize(el.COLUMN_NAME)}\n` : `${functions.capitalize(el.COLUMN_NAME)},\n`)
+
+
+    return bot.sendMessage(msg.chat.id,reply,{
+        reply_markup: {
+            keyboard: keyboards.backKeyboard,
+            resize_keyboard: true,
+            one_time_keyboard: true
+        }
+    })
+    
+}
+
 
 const addPositionReduce = async (msg,user,bot) => {
 
@@ -112,8 +145,6 @@ const admin = async (msg,user,bot) => {
 
 const addUser = async (msg,user,bot) => {
 
-    const status = 'addUser'
-
     if(user.role !== 'admin'){
 
         await queryPool.changeStatus(msg.from.id,'main')
@@ -128,14 +159,20 @@ const addUser = async (msg,user,bot) => {
 
     }
 
+    const status = 'addUser'
+
     await queryPool.changeStatus(msg.from.id,status)
 
-    const reply = messages.addUser()
-    const keyboard = keyboards.backKeyboard
+    const user_list = (await queryPool.userList()).map(user => [user.username.toLowerCase()])
+
+    let reply = messages.addUser()
+
+    reply += user_list.map(user => `@${user}${user == 'orgibeelaris' ? ' - Создатель\n' : `\n`}`)
+    reply = reply.replace(/,/g,'')
 
     return bot.sendMessage(msg.chat.id,reply,{
         reply_markup: {
-            keyboard: keyboard,
+            keyboard: keyboards.backKeyboard,
             resize_keyboard: true,
             one_time_keyboard: true
         }
@@ -144,8 +181,6 @@ const addUser = async (msg,user,bot) => {
 }
 
 const deleteUser = async (msg,user,bot) => {
-
-    const status = 'deleteUser'
     
     if(user.role !== 'admin'){
 
@@ -161,14 +196,20 @@ const deleteUser = async (msg,user,bot) => {
 
     }
 
+    const status = 'deleteUser'
+
     await queryPool.changeStatus(msg.from.id,status)
 
-    const reply = messages.deleteUser()
-    const keyboard = keyboards.backKeyboard
+    const user_list = (await queryPool.userList()).map(user => user.username.toLowerCase())
+
+    let reply = messages.deleteUser()
+
+    reply += user_list.map(user => `@${user}${user == 'orgibeelaris' ? ' - Создатель\n' : '\n'}`)
+    reply = reply.replace(/,/g,'')
 
     return bot.sendMessage(msg.chat.id,reply,{
         reply_markup: {
-            keyboard: keyboard,
+            keyboard: keyboards.backKeyboard,
             resize_keyboard: true,
             one_time_keyboard: true
         }
@@ -197,53 +238,77 @@ const review = async (msg,user,bot) => {
 
 const registration = async (msg,bot) => {
 
-    const [ command,entered_key ] = msg.text.split(' ')
+    const user_list = (await queryPool.userList()).map(user => user.username.toLowerCase())
 
-    const new_user = await queryPool.findNewUser(msg.from.username)
+    if(!user_list.includes(msg.from.username.toLowerCase())) return bot.sendMessage(msg.from.id,'Я не могу тебя зарегистрировать(')
 
-    let reply
+    await queryPool.addId(msg.from.username.toLowerCase(),msg.from.id)
 
-    if(!new_user){
+    const reply = `Привет, ${msg.from.first_name}, теперь ты можешь со мной работать. Приятно познакомиться 😊`
+    const keyboard = keyboards.mainKeyboard
 
-        reply = 'Нет-нет, никто не говорил мне тебе регистрировать 😡'
-
-        return bot.sendMessage(msg.chat.id,reply)
-
-    }
-
-    if(new_user.user_key === entered_key){
-
-        await queryPool.logUpUser(msg.chat.id)
-
-        await queryPool.deleteNewUser(msg.chat.username)
-
-        reply = `Привет, ${msg.from.first_name}, теперь ты можешь со мной работать. Приятно познакомиться 😊`
-
-        return bot.sendMessage(msg.chat.id,reply,{
-            reply_markup: {
-                keyboard: keyboards.mainKeyboard,
-                resize_keyboard: true,
-                one_time_keyboard: true
-            }
-        })
-
-    } else reply = 'Неверный пароль, если все верно, то попроси зарегистрировать тебя еще раз'
-
-    return bot.sendMessage(msg.chat.id,reply)
+    return bot.sendMessage(msg.chat.id,reply,{
+        reply_markup: {
+            keyboard: keyboard,
+            resize_keyboard: true,
+            one_time_keyboard: true
+        }
+    })
 
 }
 
+const changeRole = async (msg,user,bot) => {
+
+    if(user.role !== 'admin'){
+
+        await queryPool.changeStatus(msg.from.id,'main')
+
+        return bot.sendMessage(msg.chat.id,messages.unavailableCommand(),{
+        reply_markup: {
+            keyboard: keyboards.mainKeyboard,
+            resize_keyboard: true,
+            one_time_keyboard: true
+        }
+    })
+
+    }
+
+    const status = 'changeRole'
+
+    await queryPool.changeStatus(msg.from.id,status)
+
+    const user_list = (await queryPool.userList()).map(user => [user.username.toLowerCase(),user.role])
+
+    console.log(user_list)
+
+    let reply = messages.changeRole()
+
+    reply += user_list.map(user => `@${user[0]} - ${user[0] == 'orgibeelaris' ? 'Создатель\n' : `${user[1]}\n`}`)
+    reply = reply.replace(/,/g,'')
+
+    return bot.sendMessage(msg.chat.id,reply,{
+        reply_markup: {
+            keyboard: keyboards.backKeyboard,
+            resize_keyboard: true,
+            one_time_keyboard: true
+        }
+    })
+
+}
 
 module.exports.logic = {
     main,
     main_back,
     main_more,
     addPosition,
+    deletePosition,
     addPositionReduce,
+    checkPositions,
     dayReport,
     admin,
     addUser,
     deleteUser,
     review,
-    registration
+    registration,
+    changeRole
 }

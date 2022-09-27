@@ -27,12 +27,30 @@ const changeStatus = async (id,status) => {
     }
 }
 
-const findUser = async user => {
+const checkPositions = async () => {
     try {
-        const data = await pool.query(`SELECT * FROM users WHERE user_id = ${user}`).then(data => data[0])
+        const data = await pool.query(`SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = N'positions'`).then(data => data)
+        return data[0]
+    } catch(e){
+        return console.log('Error at checkPositions query', e)
+    }
+}
+
+const findUser = async user_id => {
+    try {
+        const data = await pool.query(`SELECT * FROM users WHERE user_id = ${user_id}`).then(data => data[0])
         return data[0]
     } catch(e){
         return console.log('Error at findUser query', e)
+    }
+}
+
+const findUserByUsername = async username => {
+    try {
+        const data = await pool.query(`SELECT * FROM users WHERE username = '${username}'`).then(data => data[0])
+        return data[0]
+    } catch(e){
+        return console.log('Error at findUserByUsername query', e)
     }
 }
 
@@ -49,6 +67,14 @@ const findPosition = async (key,date) => {
 const addPosition = async position => {
     try {
         return await pool.query(`ALTER TABLE positions ADD ${position} VARCHAR(50) NOT NULL DEFAULT '0' AFTER date`)    
+    } catch(e){
+        return console.log('Error at addPosition query', e)
+    } 
+}
+
+const deletePosition = async position => {
+    try {
+        return await pool.query(`ALTER TABLE positions DROP COLUMN ${position}`)    
     } catch(e){
         return console.log('Error at addPosition query', e)
     } 
@@ -91,36 +117,43 @@ const getDataByPeriod = async (periodStart,periodEnd) => {
     }
 }
 
-const setNewUser = async (username,key) => {
+const addUser = async username => {
     try {
-        return data = await pool.query(`INSERT INTO new_users (username,user_key) VALUES ('${username}','${key}')`)
+        return data = await pool.query(`INSERT INTO users (username) VALUE ('${username}')`)
+    } catch(e){
+        return console.log('Error at addUser query', e)
+    }
+}
+
+const addId = async (username,user_id) => {
+    try {
+        await pool.query(`UPDATE users SET user_id='${user_id}' WHERE username = '${username}'`)
+    } catch(e){
+        return console.log('Error at addId query',e)
+    }
+}
+
+const userList = async () => {
+    try {
+        return data = await pool.query('SELECT * FROM users').then(data => data[0].flat())
     } catch(e){
         return console.log('Error at setNewUser query', e)
     }
 }
 
-const findNewUser = async username => {
+const deleteUser = async username => {
     try {
-        const data = await pool.query(`SELECT * FROM new_users WHERE username = '${username}'`).then(data => data[0][0])
-        return data
+        return data = await pool.query(`DELETE FROM users WHERE username = '${username}'`)
     } catch(e){
-        return console.log('Error at findNewUser query', e)
+        return console.log('Error at deleteUser query', e)
     }
 }
 
-const logUpUser = async id => {
+const changeRole = async (username,role) => {
     try {
-        return data = await pool.query(`INSERT INTO users (user_id) VALUE ('${id}')`)
+        await pool.query(`UPDATE users SET role='${role}' WHERE username = '${username}'`)
     } catch(e){
-        return console.log('Error at setNewUser query', e)
-    }
-}
-
-const deleteNewUser = async username => {
-    try {
-        return data = await pool.query(`DELETE FROM new_users WHERE username = '${username}'`)
-    } catch(e){
-        return console.log('Error at deleteNewUser query', e)
+        return console.log('Error at changeRole query',e)
     }
 }
 
@@ -130,13 +163,17 @@ module.exports.queryPool = {
     changeStatus,
     findUser,
     addPosition,
+    deletePosition,
     addPositionReduce,
     findPosition,
     checkToday,
+    checkPositions,
     getDataByDay,
     getDataByPeriod,
-    setNewUser,
-    findNewUser,
-    logUpUser,
-    deleteNewUser
+    addUser,
+    addId,
+    userList,
+    deleteUser,
+    findUserByUsername,
+    changeRole
 }
