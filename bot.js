@@ -15,6 +15,8 @@ bot.on("polling_error", msg => console.log(msg))
 
 bot.on('message', async msg => {
 
+    if(msg.sticker) return
+
     const { id,is_bot,first_name,username,language_code } = msg.from
 
     console.log(id,first_name,username,msg.text)

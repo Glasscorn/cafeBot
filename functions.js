@@ -7,9 +7,9 @@ const getToday = () => {
     date.setSeconds(0)
     date.setMilliseconds(0)
 
-    date = date.getUTCFullYear() + '-' +
-    ('00' + (date.getUTCMonth()+1)).slice(-2) + '-' +
-    ('00' + date.getUTCDate()).slice(-2)
+    date = date.getFullYear() + '-' +
+    ('00' + (date.getMonth()+1)).slice(-2) + '-' +
+    ('00' + date.getDate()).slice(-2)
 
     return date
 
@@ -17,10 +17,10 @@ const getToday = () => {
 
 const getLastMonth = () => {
 
+    let periodStart = new Date()    
     let periodEnd = getToday()
-    let periodStart = new Date()
 
-    let currentMonth = periodStart.getUTCMonth()+1
+    let currentMonth = periodStart.getMonth()+1
 
     periodStart.setMonth(currentMonth-1)
     periodStart.setHours(3)
@@ -28,9 +28,9 @@ const getLastMonth = () => {
     periodStart.setSeconds(0)
     periodStart.setMilliseconds(0)
 
-    periodStart = periodStart.getUTCFullYear() + '-' +
-    ('00' + (periodStart.getUTCMonth())).slice(-2) + '-' +
-    ('00' + periodStart.getUTCDate()).slice(-2)
+    periodStart = periodStart.getFullYear() + '-' +
+    ('00' + (periodStart.getMonth())).slice(-2) + '-' +
+    ('00' + periodStart.getDate()).slice(-2)
     
     return { periodStart,periodEnd }
 
@@ -49,9 +49,9 @@ const getLastWeek = () => {
     periodStart.setSeconds(0)
     periodStart.setMilliseconds(0)
 
-    periodStart = periodStart.getUTCFullYear() + '-' +
-    ('00' + (periodStart.getUTCMonth()+1)).slice(-2) + '-' +
-    ('00' + periodStart.getUTCDate()).slice(-2)
+    periodStart = periodStart.getFullYear() + '-' +
+    ('00' + (periodStart.getMonth()+1)).slice(-2) + '-' +
+    ('00' + periodStart.getDate()).slice(-2)
     
     return { periodStart,periodEnd }
 
@@ -61,7 +61,19 @@ const getDay = day => day.split('.').reverse().join('-')
 
 const capitalize = str => str.charAt(0).toUpperCase() + str.slice(1)
 
-const toReadableData = date => `${String(date.getUTCDate()+1).padStart(2,'0')}.${String(date.getUTCMonth()+1).padStart(2,'0')}.${date.getUTCFullYear()}`
+const toReadableData = date => `${String(date.getDate()).padStart(2,'0')}.${String(date.getMonth()+1).padStart(2,'0')}.${date.getFullYear()}`
+
+const setMidnight = date => {
+    date.setHours(3)
+    return date
+}
+
+const timeToDate = time => {
+    let date = new Date(time)
+    return date
+}
+
+const timeout = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 module.exports.functions = {
     getLastMonth,
@@ -70,4 +82,7 @@ module.exports.functions = {
     getDay,
     capitalize,
     toReadableData,
+    setMidnight,
+    timeToDate,
+    timeout
 }

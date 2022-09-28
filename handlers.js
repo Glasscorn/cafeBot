@@ -231,6 +231,8 @@ const dayReport = async (msg,user,bot) => {
 
     }
 
+    for(const row of data) functions.setMidnight(row.date)
+
     if(data[0]) data.forEach(day => {
 
         for(const position in day){

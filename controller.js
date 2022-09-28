@@ -1,18 +1,49 @@
-const queryPool = require('./query')
+const { functions } = require('./functions')
+const { queryPool } = require('./query')
+const { sheetWare } = require('./sheetWare')
 
 class Controller {
     async getData(req,res){
 
-        const [ periodStart,periodEnd ] = Object.values(req.query)
-        console.log([ periodStart,periodEnd ])
+        let [ periodStart,periodEnd,lastColumn ] = Object.values(req.query)
         
         try {
             
-            res.json({ periodStart,periodEnd })
+            [ periodStart,periodEnd ] = [ periodStart,periodEnd ].map(el => functions.getDay(el))
+
+            console.log([ periodStart,periodEnd ])
+
+            const data = await queryPool.getDataByPeriod(periodStart,periodEnd)
+
+            let headers = Object.keys(data[0])
+            let result = []
+
+            for(const row of data) {
+             
+                functions.setMidnight(row.date)
+                
+                row.date = `${row.date.getDate()}.${row.date.getMonth()+1}.${row.date.getFullYear()}`
+
+                result.push(Object.values(row))
+
+            }
+
+            result.unshift(headers)
+            console.table(result)
+
+            await sheetWare.setData(result,lastColumn)
+
+            res.status(200).send(true)
 
         } catch(e){
 
-            res.status(500)
+            console.log(e)
+
+            res.status(500).json({
+                status: 500,
+                error: 'Invalid query'
+            })
+
         }
 
     }
