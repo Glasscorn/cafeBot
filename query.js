@@ -117,6 +117,15 @@ const getDataByPeriod = async (periodStart,periodEnd) => {
     }
 }
 
+const getAllData = async () => {
+    try {
+        const data = await pool.query('SELECT * FROM positions').then(data => data[0])
+        return data
+    } catch(e){
+        return console.log('Error at getAllData query', e)
+    }
+}
+
 const addUser = async username => {
     try {
         return data = await pool.query(`INSERT INTO users (username) VALUE ('${username}')`)
@@ -170,6 +179,7 @@ module.exports.queryPool = {
     checkPositions,
     getDataByDay,
     getDataByPeriod,
+    getAllData,
     addUser,
     addId,
     userList,

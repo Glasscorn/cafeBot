@@ -5,15 +5,11 @@ const { sheetWare } = require('./sheetWare')
 class Controller {
     async getData(req,res){
 
-        let [ periodStart,periodEnd,lastColumn ] = Object.values(req.query)
+        let [ lastColumn ] = Object.values(req.query)
         
         try {
-            
-            [ periodStart,periodEnd ] = [ periodStart,periodEnd ].map(el => functions.getDay(el))
 
-            console.log([ periodStart,periodEnd ])
-
-            const data = await queryPool.getDataByPeriod(periodStart,periodEnd)
+            const data = await queryPool.getAllData()
 
             let headers = Object.keys(data[0])
             let result = []
