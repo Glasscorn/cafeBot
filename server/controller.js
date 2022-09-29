@@ -1,5 +1,5 @@
-const { functions } = require('./functions')
-const { queryPool } = require('./query')
+const { functions } = require('../bot/functions')
+const { queryPool } = require('../sql/query')
 const { sheetWare } = require('./sheetWare')
 
 class Controller {

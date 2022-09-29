@@ -1,7 +1,7 @@
 const { functions } = require('./functions')
-const { messages } = require('./messages')
-const { keyboards } = require('./keyboards')
-const { queryPool } = require('./query')
+const { messages } = require('./commands/messages')
+const { keyboards } = require('./commands/keyboards')
+const { queryPool } = require('../sql/query')
 
 const main = async (msg,user,bot) => {
 
@@ -271,7 +271,7 @@ const checkPositions = async (msg,user,bot) => {
 
     const data = await queryPool.checkPositions()
 
-    let reply = messages.checkPositions
+    let reply = messages.checkPositions()
 
     data.forEach((el,i) => reply += i === 0 ? '' : i === data.length-1 ? `${functions.capitalize(el.COLUMN_NAME)}\n` : `${functions.capitalize(el.COLUMN_NAME)},\n`)
 

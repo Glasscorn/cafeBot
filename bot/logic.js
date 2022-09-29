@@ -1,10 +1,10 @@
 require('dotenv').config()
 
-const { messages } = require('./messages')
-const { keyboards } = require('./keyboards')
-const { queryPool } = require('./query')
-const { handlers } = require('./handlers')
 const { functions } = require('./functions')
+const { messages } = require('./commands/messages')
+const { keyboards } = require('./commands/keyboards')
+const { queryPool } = require('../sql/query')
+const { handlers } = require('./handlers')
 
 const main = async (msg,user,bot) => {
 
@@ -38,7 +38,7 @@ const addPosition = async (msg,user,bot) => {
 
     const data = await queryPool.checkPositions()
 
-    let reply = messages.addPosition
+    let reply = messages.addPosition()
 
     data.forEach((el,i) => reply += i === 0 ? '' : i === data.length-1 ? `${functions.capitalize(el.COLUMN_NAME)}\n` : `${functions.capitalize(el.COLUMN_NAME)},\n`)
 
@@ -61,7 +61,7 @@ const deletePosition = async (msg,user,bot) => {
 
     const data = await queryPool.checkPositions()
 
-    let reply = messages.deletePosition
+    let reply = messages.deletePosition()
 
     data.forEach((el,i) => reply += i === 0 ? '' : i === data.length-1 ? `${functions.capitalize(el.COLUMN_NAME)}\n` : `${functions.capitalize(el.COLUMN_NAME)},\n`)
 

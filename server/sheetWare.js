@@ -1,6 +1,6 @@
 require('dotenv').config()
 const { google } = require ("googleapis")
-const { functions } = require('./functions')
+const { functions } = require('../bot/functions')
 
 
 const setData = async (arr,lastColumn) => {

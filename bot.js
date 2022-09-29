@@ -1,11 +1,10 @@
 require('dotenv').config()
 const TelegramBot = require('node-telegram-bot-api')
 
-const { queryPool } = require('./query')
-const { messages } = require('./messages')
-const { logic } = require('./logic')
-const { functions } = require('./functions')
-const { sheetWare } = require('./sheetWare')
+const { queryPool } = require('./sql/query')
+const { messages } = require('./bot/commands/messages')
+const { logic } = require('./bot/logic')
+const { functions } = require('./bot/functions')
 
 const TOKEN = process.env.TOKEN
 
