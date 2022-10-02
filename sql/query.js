@@ -110,7 +110,7 @@ const getDataByDay = async date => {
 
 const getDataByPeriod = async (periodStart,periodEnd) => {
     try {
-        const data = await pool.query(`SELECT * FROM positions WHERE date BETWEEN date '${periodStart}' AND date '${periodEnd}'`).then(data => data[0])
+        const data = await pool.query(`SELECT * FROM positions WHERE date BETWEEN date '${periodStart}' AND date '${periodEnd}' GROUP BY date DESC`).then(data => data[0])
         return data
     } catch(e){
         return console.log('Error at getDataByPeriod query', e)
