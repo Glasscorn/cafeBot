@@ -147,9 +147,11 @@ const addPositionReduce = async (msg,user,bot) => {
     for(const product of request_params){
 
         const key = isNaN(Number(product[0])) ? product[0] : product[1]
-        const value = isNaN(Number(product[0])) ? product[1] : product[0]
+        let value = isNaN(Number(product[0])) ? product[1] : product[0]
 
         request[key] = Number(value)
+
+        if(!request[key]) request[key] = 0 
 
         const currentValue = await queryPool.findPosition(key,date)
 
