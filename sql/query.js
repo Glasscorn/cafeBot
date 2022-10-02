@@ -119,7 +119,7 @@ const getDataByPeriod = async (periodStart,periodEnd) => {
 
 const getAllData = async () => {
     try {
-        const data = await pool.query('SELECT * FROM positions').then(data => data[0])
+        const data = await pool.query('SELECT * FROM positions GROUP BY date DESC').then(data => data[0])
         return data
     } catch(e){
         return console.log('Error at getAllData query', e)
